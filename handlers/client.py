@@ -158,7 +158,7 @@ async def settings_cmdRu(message: types.Message):
                              parse_mode='html')
     else:
         await message.answer("<b>🚫 Вы не зарегистрированы\n\n🚫 Сіз тіркелмегенсіз\n\nЗарегистрироваться: "
-                             "/start\nТіркелу: /start</b>")
+                             "/start\nТіркелу: /start</b>", parse_mode='html')
 
 
 async def settings_cmdKz(message: types.Message):
@@ -176,7 +176,7 @@ async def settings_cmdKz(message: types.Message):
                              reply_markup=await changeKeyboardFunc(message.from_user.id), parse_mode='html')
     else:
         await message.answer("<b>🚫 Вы не зарегистрированы\n\n🚫 Сіз тіркелмегенсіз\n\nЗарегистрироваться: "
-                             "/start\nТіркелу: /start</b>")
+                             "/start\nТіркелу: /start</b>", parse_mode='html')
 
 
 async def changeLang(callback: types.CallbackQuery):
