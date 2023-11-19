@@ -227,7 +227,7 @@ async def appeal_cmd(message: types.Message):
 
     else:
         await message.answer("<b>🚫 Вы не зарегистрированы\n\n🚫 Сіз тіркелмегенсіз\n\nЗарегистрироваться: "
-                             "/start\nТіркелу: /start</b>")
+                             "/start\nТіркелу: /start</b>", parse_mode='html')
 
 
 async def pscZdvr_cmd(message: types.Message, state: FSMContext):
@@ -338,7 +338,7 @@ async def consultation_cmd(message: types.Message):
 
     else:
         await message.answer("<b>🚫 Вы не зарегистрированы\n\n🚫 Сіз тіркелмегенсіз\n\nЗарегистрироваться: "
-                             "/start\nТіркелу: /start</b>")
+                             "/start\nТіркелу: /start</b>", parse_mode='html')
 
 
 async def pscZdvrConsultation_cmd(message: types.Message, state: FSMContext):
