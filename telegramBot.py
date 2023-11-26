@@ -10,6 +10,7 @@ async def on_startup(_):
 
 
 client.register_handlers_client(dp)
+admin.register_handlers_admin(dp)
 
 
 if __name__ == "__main__":

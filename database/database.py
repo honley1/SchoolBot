@@ -1,7 +1,6 @@
 import sqlite3 as sq
 from datetime import datetime
 
-
 def sql_start():
     global base, cur
     base = sq.connect("SchoolBot.db")
@@ -16,8 +15,18 @@ def sql_start():
                  "name TEXT, Class TEXT, pscZdvr TEXT, cause TEXT, descriptionOfProblem TEXT, contact TEXT)"
                  )
     base.execute("CREATE TABLE IF NOT EXISTS userColumnConsultation(userID TEXT, time TEXT, person TEXT, "
-                 "username TEXT, name TEXT, Class TEXT, pscZdvr TEXT, dayOfTheWeek TEXT, contact TEXT)")
+                 "username TEXT, name TEXT, Class TEXT, pscZdvr TEXT, dayOfTheWeek TEXT, contact TEXT)"
+                 )
+    base.execute('CREATE TABLE IF NOT EXISTS adminId(admin_id)')
     base.commit()
+
+
+def sql_read_admins():
+    i = []
+    for ret in cur.execute('SELECT * FROM adminId').fetchall():
+        i.append(ret[0])
+
+    return i
 
 
 async def createUserColumn(userID, username, name, lang, person, Class):
@@ -94,3 +103,71 @@ async def getUserClass(userID):
     name = cur.execute("SELECT Class FROM userColumn WHERE userID = '{key}'".format(key=userID)).fetchone()
 
     return name[0]
+
+
+async def sql_read_consultation() -> str:
+    string = ""
+    i = 0
+
+    for ret in cur.execute('SELECT * FROM userColumnConsultation').fetchall():
+        string += f"ID пользователя: <b>{ret[0]}\n</b>" \
+                  f"Время подачи заявки: <b>{ret[1]}\n</b>" \
+                  f"Кто подал заявку: <b>{ret[2]}\n</b>" \
+                  f"Username: <b>{ret[3]}\n</b>" \
+                  f"ФИО: <b>{ret[4]}\n</b>" \
+                  f"Класс: <b>{ret[5]}\n</b>" \
+                  f"К кому обращались: <b>{ret[6]}\n</b>" \
+                  f"День недели: <b>{ret[7]}\n</b>" \
+                  f"Контакты: <b>{ret[8]}\n\n</b>"
+        i += 1
+
+    string += f"Количество заявок: <b>{i}</b>"
+    return string
+
+
+async def sql_read_appeal() -> str:
+    string = ""
+    i = 0
+
+    for ret in cur.execute('SELECT * FROM userColumnAppeal').fetchall():
+        string += f"ID пользователя: <b>{ret[0]}\n</b>" \
+                  f"Время подачи заявки: <b>{ret[1]}\n</b>" \
+                  f"Кто подал заявку: <b>{ret[2]}\n</b>" \
+                  f"Username: <b>{ret[3]}\n</b>" \
+                  f"ФИО: <b>{ret[4]}\n</b>" \
+                  f"Класс: <b>{ret[5]}\n</b>" \
+                  f"К кому обращались: <b>{ret[6]}\n</b>" \
+                  f"Причина: <b>{ret[7]}\n</b>" \
+                  f"Описание проблемы: <b>{ret[8]}\n</b>" \
+                  f"Контакты: <b>{ret[9]}</b>\n\n"
+        i += 1
+
+    string += f"Количество заявок: <b>{i}</b>"
+
+    return string
+
+
+async def sql_read_admins_for_admin():
+    string = ""
+    i = 0
+
+    for ret in cur.execute('SELECT * FROM adminId').fetchall():
+        string += f"ID: <b>{ret[0]}</b>\n\n"
+        i += 1
+
+    string += f"Количество админов: <b>{i}</b>"
+    return string
+
+
+async def sql_delete_column_query():
+    cur.execute("DELETE FROM userColumnAppeal")
+    cur.execute("DELETE FROM userColumnConsultation")
+
+    base.commit()
+
+
+async def sql_add_admins(admin_id):
+    admin = cur.execute("SELECT 1 FROM adminId WHERE admin_id == '{key}'".format(key=admin_id)).fetchone()
+    if not admin:
+        cur.execute("INSERT INTO adminId (admin_id) VALUES (?)", (admin_id,))
+        base.commit()

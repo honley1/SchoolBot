@@ -1,54 +1,44 @@
 from aiogram import types, Dispatcher
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
+from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters.state import State, StatesGroup
 from keyboards import choice_lang, mainKeyboard, changeKeyboardFunc, causeKeyboard, setAppealKeyboard, skipKeyboard, \
-    dayOfTheWeekKeyboard, timeConsultationKeyboard
+    dayOfTheWeekKeyboard, timeConsultationKeyboard, mainKeyboardAdmin
 from database import createUserColumn, userExist, getUserLang, getName, getUserPerson, getUserClass, setNewLang, \
-    createUserColumnAppeal, createUserColumnConsultation
-
-
-class StartFSM(StatesGroup):
-    lang = State()
-    person = State()
-    name = State()
-    Class = State()
-
-
-class ChangeLangFSM(StatesGroup):
-    newLang = State()
-
-
-class AppealFSM(StatesGroup):
-    pscZdvr = State()
-    cause = State()
-    descriptionOfProblem = State()
-    Contact = State()
-
-
-class ConsultationFSM(StatesGroup):
-    pscZdvr = State()
-    dayOfTheWeek = State()
-    timeUser = State()
-    Contact = State()
+    createUserColumnAppeal, createUserColumnConsultation, sql_read_admins
+from states.client import *
 
 
 async def start_cmd(message: types.Message, state: FSMContext):
     user = await userExist(message.from_user.id)
     if user:
-        userLang = await getUserLang(message.from_user.id)
-        name = await getName(message.from_user.id)
-        if userLang == "Русский":
-            await message.answer(f"👋 Здравствуйте, <b>{name}</b>!\n🔹 Выберите <b>действие</b>",
-                                 parse_mode='html',
-                                 reply_markup=await mainKeyboard(message.from_user.id))
-            await state.finish()
-        elif userLang == "Қазақша":
-            await message.answer(f"👋 Сәлем, <b>{name}</b>!\n🔹 Әрекетті <b>таңдаңыз</b>",
-                                 parse_mode='html',
-                                 reply_markup=await mainKeyboard(message.from_user.id))
-            await state.finish()
+        admin_id = sql_read_admins()
+        if message.from_user.id in admin_id:
+            userLang = await getUserLang(message.from_user.id)
+            name = await getName(message.from_user.id)
+            if userLang == "Русский":
+                await message.answer(f"🙇🏻‍♂️ Здравствуйте, <b>{name}</b>!\n🔹 Выберите <b>действие</b>",
+                                     parse_mode='html',
+                                     reply_markup=await mainKeyboardAdmin(message.from_user.id))
+                await state.finish()
+            elif userLang == "Қазақша":
+                await message.answer(f"🙇🏻‍♂️ Сәлеметсіз бе, <b>{name}</b>!\n🔹 Әрекетті <b>таңдаңыз</b>",
+                                     parse_mode='html',
+                                     reply_markup=await mainKeyboardAdmin(message.from_user.id))
+                await state.finish()
+        else:
+            userLang = await getUserLang(message.from_user.id)
+            name = await getName(message.from_user.id)
+            if userLang == "Русский":
+                await message.answer(f"👋 Здравствуйте, <b>{name}</b>!\n🔹 Выберите <b>действие</b>",
+                                     parse_mode='html',
+                                     reply_markup=await mainKeyboard(message.from_user.id))
+                await state.finish()
+            elif userLang == "Қазақша":
+                await message.answer(f"👋 Сәлем, <b>{name}</b>!\n🔹 Әрекетті <b>таңдаңыз</b>",
+                                     parse_mode='html',
+                                     reply_markup=await mainKeyboard(message.from_user.id))
+                await state.finish()
 
     else:
         await message.answer("<b>Выберите язык\n\nТілді таңдаңыз</b>",
@@ -128,12 +118,26 @@ async def set_Class(message: types.Message, state: FSMContext):
                                    data['person'], data['Class'])
 
             if data['lang'] == "Русский":
-                await message.reply(f"👋 Здравствуйте, <b>{data['name']}</b>!\n🔹 Выберите <b>действие</b>",
-                                    parse_mode='html', reply_markup=await mainKeyboard(message.from_user.id))
+                admin_id = sql_read_admins()
+                if message.from_user.id in admin_id:
+                    await message.reply(f"👋 Здравствуйте, <b>{data['name']}</b>!\n🔹 Выберите <b>действие</b>",
+                                        parse_mode='html',
+                                        reply_markup=await mainKeyboardAdmin(message.from_user.id))
+                else:
+                    await message.reply(f"👋 Здравствуйте, <b>{data['name']}</b>!\n🔹 Выберите <b>действие</b>",
+                                        parse_mode='html',
+                                        reply_markup=await mainKeyboard(message.from_user.id))
             elif data['lang'] == "Қазақша":
-                await message.reply(f"👋 Сәлем, <b>{data['name']}</b>!\n🔹 Әрекетті <b>таңдаңыз</b>",
-                                    parse_mode='html',
-                                    reply_markup=await mainKeyboard(message.from_user.id))
+                admin_id = sql_read_admins()
+                if message.from_user.id in admin_id:
+                    await message.reply(f"👋 Сәлем, <b>{data['name']}</b>!\n🔹 Әрекетті <b>таңдаңыз</b>",
+                                        parse_mode='html',
+                                        reply_markup=await mainKeyboardAdmin(message.from_user.id))
+
+                else:
+                    await message.reply(f"👋 Сәлем, <b>{data['name']}</b>!\n🔹 Әрекетті <b>таңдаңыз</b>",
+                                        parse_mode='html',
+                                        reply_markup=await mainKeyboard(message.from_user.id))
 
         await state.finish()
 
@@ -194,18 +198,30 @@ async def newLangCmd(callback: types.CallbackQuery, state: FSMContext):
             userLang = data['newLang']
             name = await getName(callback.from_user.id)
 
-
             if userLang == "Русский":
-                await setNewLang(callback.from_user.id, userLang)
-                await callback.message.answer(f"👋 Здравствуйте, <b>{name}</b>!\n🔹 Выберите <b>действие</b>",
-                                              parse_mode='html',
-                                              reply_markup=await mainKeyboard(callback.from_user.id))
+                admin_id = sql_read_admins()
+                if callback.message.from_user.id in admin_id:
+                    await setNewLang(callback.from_user.id, userLang)
+                    await callback.message.answer(f"👋 Здравствуйте, <b>{name}</b>!\n🔹 Выберите <b>действие</b>",
+                                                  parse_mode='html',
+                                                  reply_markup=await mainKeyboardAdmin(callback.from_user.id))
+                else:
+                    await setNewLang(callback.from_user.id, userLang)
+                    await callback.message.answer(f"👋 Здравствуйте, <b>{name}</b>!\n🔹 Выберите <b>действие</b>",
+                                                  parse_mode='html',
+                                                  reply_markup=await mainKeyboard(callback.from_user.id))
 
             elif userLang == "Қазақша":
                 await setNewLang(callback.from_user.id, userLang)
-                await callback.message.answer(f"👋 Сәлем, <b>{name}</b>!\n🔹 Әрекетті <b>таңдаңыз</b>",
-                                              parse_mode='html',
-                                              reply_markup=await mainKeyboard(callback.from_user.id))
+                admin_id = sql_read_admins()
+                if callback.message.from_user.id in admin_id:
+                    await callback.message.answer(f"👋 Сәлем, <b>{name}</b>!\n🔹 Әрекетті <b>таңдаңыз</b>",
+                                                  parse_mode='html',
+                                                  reply_markup=await mainKeyboardAdmin(callback.from_user.id))
+                else:
+                    await callback.message.answer(f"👋 Сәлем, <b>{name}</b>!\n🔹 Әрекетті <b>таңдаңыз</b>",
+                                                  parse_mode='html',
+                                                  reply_markup=await mainKeyboard(callback.from_user.id))
 
             await callback.answer()
 
@@ -319,9 +335,15 @@ async def contactAppeal_cmd(message: types.Message, state: FSMContext):
         await createUserColumnAppeal(message.from_user.id, userPerson, message.from_user.username, name, Class,
                                      data['pscZdvr'], data['cause'], data['descriptionOfProblem'], data['Contact'])
 
-        await message.answer("✅ Спасибо, Ваше <b>обращение принято</b>!" if userLang == "Русский"
-                             else "✅ Рахмет, сіздің <b>апелляцияңыз қабылданды</b>!", parse_mode='html',
-                             reply_markup=await mainKeyboard(message.from_user.id))
+        admin_id = sql_read_admins()
+        if message.from_user.id in admin_id:
+            await message.answer("✅ Спасибо, Ваше <b>обращение принято</b>!" if userLang == "Русский"
+                                 else "✅ Рахмет, сіздің <b>апелляцияңыз қабылданды</b>!", parse_mode='html',
+                                 reply_markup=await mainKeyboardAdmin(message.from_user.id))
+        else:
+            await message.answer("✅ Спасибо, Ваше <b>обращение принято</b>!" if userLang == "Русский"
+                                 else "✅ Рахмет, сіздің <b>апелляцияңыз қабылданды</b>!", parse_mode='html',
+                                 reply_markup=await mainKeyboard(message.from_user.id))
 
         await state.finish()
 
@@ -465,16 +487,23 @@ async def contactConsultation(message: types.Message, state: FSMContext):
         await createUserColumnConsultation(message.from_user.id, person, message.from_user.username, name, Class,
                                            data['pscZdvr'], data['dayOfTheWeek'], data['Contact'])
 
-        await message.answer(f"✅ Консультация успешно назначена на <b>{data['dayOfTheWeek']}</b>, <b>{data['timeUser']}</b>!"
-                             if userLang == "Русский" else f"✅ Консультация <b>{data['dayOfTheWeek']}, "
-                             f"{data['timeUser']}</b> күндеріне сәтті жоспарланған!",
-                             parse_mode='html', reply_markup=await mainKeyboard(message.from_user.id))
+        admin_id = sql_read_admins()
+        if message.from_user.id in admin_id:
+            await message.answer(f"✅ Консультация успешно назначена на <b>{data['dayOfTheWeek']}</b>, <b>{data['timeUser']}</b>!"
+                                 if userLang == "Русский" else f"✅ Консультация <b>{data['dayOfTheWeek']}, "
+                                 f"{data['timeUser']}</b> күндеріне сәтті жоспарланған!",
+                                 parse_mode='html', reply_markup=await mainKeyboardAdmin(message.from_user.id))
+        else:
+            await message.answer(f"✅ Консультация успешно назначена на <b>{data['dayOfTheWeek']}</b>, <b>{data['timeUser']}</b>!"
+                                 if userLang == "Русский" else f"✅ Консультация <b>{data['dayOfTheWeek']}, "
+                                 f"{data['timeUser']}</b> күндеріне сәтті жоспарланған!",
+                                 parse_mode='html', reply_markup=await mainKeyboard(message.from_user.id))
 
         await state.finish()
 
 
 def register_handlers_client(dp: Dispatcher):
-    dp.register_message_handler(start_cmd, commands=['start'])
+    dp.register_message_handler(start_cmd, commands=['start'], state='*')
     dp.register_callback_query_handler(set_lang, state=StartFSM.lang)
     dp.register_message_handler(set_person, state=StartFSM.person)
     dp.register_message_handler(set_name, state=StartFSM.name)
