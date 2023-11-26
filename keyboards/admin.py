@@ -14,7 +14,9 @@ async def mainKeyboardAdmin(userID) -> ReplyKeyboardMarkup:
             [KeyboardButton(text="📱 Посмотреть все обращения")],
             [KeyboardButton(text="👤 Посмотреть всех администраторов")],
             [KeyboardButton(text="🚽 Очистить данные")],
-            [KeyboardButton(text="🖋 Добавить админа")]
+            [KeyboardButton(text="🖋 Добавить админа")],
+            [KeyboardButton(text="👨🏻‍💼 Посмотреть всех пользователей")],
+            [KeyboardButton(text="🤣 Очистить данные об администраторах")]
         ], resize_keyboard=True
     )
 

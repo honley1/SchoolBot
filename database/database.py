@@ -1,5 +1,8 @@
+import json
 import sqlite3 as sq
 from datetime import datetime
+import io
+
 
 def sql_start():
     global base, cur
@@ -166,8 +169,39 @@ async def sql_delete_column_query():
     base.commit()
 
 
+async def sql_delete_column_admin():
+    cur.execute("DELETE FROM adminId")
+
+    base.commit()
+
+
 async def sql_add_admins(admin_id):
     admin = cur.execute("SELECT 1 FROM adminId WHERE admin_id == '{key}'".format(key=admin_id)).fetchone()
     if not admin:
         cur.execute("INSERT INTO adminId (admin_id) VALUES (?)", (admin_id,))
         base.commit()
+
+
+async def sql_read_users(message):
+    user_data = []
+
+    for ret in cur.execute('SELECT * FROM userColumn').fetchall():
+        user_info = {
+            'ID пользователя': ret[0],
+            'Username': ret[1],
+            'ФИО': ret[2],
+            'Язык': ret[3],
+            'Кто он': ret[4],
+            'Класс': ret[5]
+        }
+        user_data.append(user_info)
+
+    total_users = len(user_data)
+    user_data.append({'Количество пользователей': total_users})
+
+    json_data = json.dumps(user_data, indent=4, ensure_ascii=False)
+
+    buffer = io.BytesIO(json_data.encode('utf-8'))
+    buffer.name = 'user_data.json'
+
+    return buffer

@@ -13,7 +13,7 @@ async def start_cmd(message: types.Message, state: FSMContext):
     user = await userExist(message.from_user.id)
     if user:
         admin_id = sql_read_admins()
-        if message.from_user.id in admin_id:
+        if message.from_user.id in admin_id or message.from_user.id == 803817300:
             userLang = await getUserLang(message.from_user.id)
             name = await getName(message.from_user.id)
             if userLang == "Русский":
@@ -200,7 +200,7 @@ async def newLangCmd(callback: types.CallbackQuery, state: FSMContext):
 
             if userLang == "Русский":
                 admin_id = sql_read_admins()
-                if callback.message.from_user.id in admin_id:
+                if callback.from_user.id in admin_id:
                     await setNewLang(callback.from_user.id, userLang)
                     await callback.message.answer(f"👋 Здравствуйте, <b>{name}</b>!\n🔹 Выберите <b>действие</b>",
                                                   parse_mode='html',
@@ -214,7 +214,7 @@ async def newLangCmd(callback: types.CallbackQuery, state: FSMContext):
             elif userLang == "Қазақша":
                 await setNewLang(callback.from_user.id, userLang)
                 admin_id = sql_read_admins()
-                if callback.message.from_user.id in admin_id:
+                if callback.from_user.id in admin_id:
                     await callback.message.answer(f"👋 Сәлем, <b>{name}</b>!\n🔹 Әрекетті <b>таңдаңыз</b>",
                                                   parse_mode='html',
                                                   reply_markup=await mainKeyboardAdmin(callback.from_user.id))
