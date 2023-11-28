@@ -13,7 +13,7 @@
 1. Клонируйте репозиторий:
 
     ```bash
-    git clone https://github.com/ваш_логин/ваш_репозиторий.git
+    git clone https://github.com/ваш_логин/SchoolBot.git
     ```
 
 2. Установите необходимые зависимости:
